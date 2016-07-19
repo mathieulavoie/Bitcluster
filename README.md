@@ -1,4 +1,4 @@
-# Bitclustr
+# Bitcluster
 
 ## Dependencies
 flask
