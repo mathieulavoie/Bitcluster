@@ -8,12 +8,15 @@ from bitcoin.core import CTransaction
 
 class BaseCrawler:
     def __init__(self):
-        self.proxy = bitcoin.rpc.Proxy()
-        self.start = datetime.now()
         self.block_id = -1
+        self.proxy = None
+        self.connect_to_bitcoind_rpc()
+
+    def connect_to_bitcoind_rpc(self):
+        self.proxy = bitcoin.rpc.Proxy()
+
 
     def crawl_block(self,block_id):
-
             try:
                 self.block_id = block_id
                 hash = self.proxy.getblockhash(block_id)

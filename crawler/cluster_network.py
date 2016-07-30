@@ -80,6 +80,10 @@ class ClusterNetwork:
         collection = db.addresses
         transactions = db.transactions
         db_next_node_id = 1
+
+        #Ensure index existence
+        collection.create_index([("n_id", DESCENDING)])
+
         for x in collection.find().sort("n_id",DESCENDING).limit(1):
             db_next_node_id = x['n_id'] +1
 
