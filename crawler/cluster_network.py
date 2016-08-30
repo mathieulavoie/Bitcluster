@@ -30,26 +30,9 @@ class ClusterNetwork:
         n = max(1, n)
         return [l[i:i + n] for i in range(0, len(l), n)]
 
-    def parse_addresses(self,inputs):
-        addresses_in = set()
-        for i in inputs:
-            try:
-                addresses_in.add(self.addr_utils.convert_hash160_to_addr(self.addr_utils.convert_public_key_to_hash160(i)))
-            except:
-                pass
-                #print("Unable to parse an input address. Ignoring this address")
-
-
-        if len(addresses_in) ==0:
-            return None
-
-        return addresses_in
 
     def process_transaction_data(self,inputs, outputs):
-        addresses_in = self.parse_addresses(inputs)
-        if addresses_in is None:
-            return
-        self.merge_into_graph(addresses_in)
+        self.merge_into_graph(inputs)
 
     def merge_into_graph(self,addresses_in):
         new_node_addresses = []

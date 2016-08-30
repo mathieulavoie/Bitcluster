@@ -23,11 +23,12 @@ class Addressutils:
         elif  script[0] == OP_HASH160 and script[-1] == OP_EQUAL:#P2SH
             script = script[1:]
             script = script[1:script[0]+1]
-            return self.convert_hash160_to_addr(script)
+            return self.convert_hash160_to_addr(script,network_id=b'\x05') #Multi-Sign Address
 
         elif  script[-1] == OP_CHECKSIG: #V1 Validation With Public Key
             return self.convert_hash160_to_addr(self.convert_public_key_to_hash160(script))
-        return None
+
+        raise AttributeError("CScript Format not supported")
 
 
     def convert_public_key_to_hash160(self,pub_key_data):
@@ -42,11 +43,10 @@ class Addressutils:
         return h.digest()
 
 
-    def convert_hash160_to_addr(self,hash_160):
-        hash_160 = b'\x00' + hash_160
+    def convert_hash160_to_addr(self,hash_160, network_id=b'\x00'):
+        hash_160 = network_id + hash_160
         hex_addr = (hash_160 + hashlib.sha256(hashlib.sha256(hash_160).digest()).digest()[:4])
         return bitcoin.base58.encode(hex_addr)
-
 
 
     '''

@@ -15,7 +15,8 @@ def start():
         block_id = start_block_id
         process = None
         while builder.crawl_block(block_id):
-            print("Block %d crawled" % block_id)
+            if settings.debug or block_id % 100 == 0:
+                print("Block %d crawled" % block_id)
 
             if block_id - start_block_id > 0 and (block_id - start_block_id) % settings.block_crawling_limit == 0:
                 builder.network_graph.check_integrity()
@@ -41,6 +42,7 @@ def start():
             process.join()
 
         #Sync the rest
+        print("Inserting into the DB")
         process = Process(target=builder.network_graph.synchronize_mongo_db)
         process.start()
         process.join()
