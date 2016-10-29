@@ -1,4 +1,3 @@
-#from web import app
 import re
 import csv
 import io
