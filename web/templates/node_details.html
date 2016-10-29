@@ -13,7 +13,7 @@
         <div class="col-md-4 text-center">
         	<br/>
         	<h3>Total income</h3>
-        	<h4>{{informations['stats']['amounts_received']['btc']|round(8)}} BTC / {{informations['stats']['amounts_received']['usd']|round(2)}} USD</h4>
+        	<h4>{{informations['stats']['amounts_received']['btc']|format_btc}} BTC / {{informations['stats']['amounts_received']['usd']|format_usd}} USD</h4>
         	<p>From {{informations['stats']['distinct_sources_count']}} different nodes<p>
         </div>
 
@@ -29,7 +29,7 @@
         <div class="col-md-4 text-center">
         	<br/>
         	<h3>Total spending</h3>
-        	<h4>{{informations['stats']['amounts_sent']['btc']|round(8)}} BTC / {{informations['stats']['amounts_sent']['usd']|round(2)}} USD</h4>
+        	<h4>{{informations['stats']['amounts_sent']['btc']|format_btc}} BTC / {{informations['stats']['amounts_sent']['usd']|format_usd}} USD</h4>
         	<p>To {{informations['stats']['distinct_destination_count']}} different nodes<p>
         </div>
     </div>
@@ -72,8 +72,8 @@
 				    {% for k,v in informations['incomes_grouped']['by_node']  %}
 			     		<tr>
 			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k}}</a></td>
-			        		<td>{{v['amount_usd']|round(2)}}</td>
-			        		<td>{{v['amount_btc']|round(8)}}</td>
+			        		<td>{{v['amount_usd']|format_usd}}</td>
+			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -95,8 +95,8 @@
 				    {% for k,v in informations['incomes_grouped']['by_date'] %}
 			     		<tr>
 			        		<td>{{k}}</td>
-			        		<td>{{v['amount_usd']|round(2)}}</td>
-			        		<td>{{v['amount_btc']|round(8)}}</td>
+			        		<td>{{v['amount_usd']|format_usd}}</td>
+			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -115,7 +115,7 @@
 				    <tbody>
 				    {% for k,v in informations['incomes_grouped']['by_amount']['amount_usd'] %}
 			     		<tr>
-			        		<td>{{k|round(2)}}</td>
+			        		<td>{{k|format_usd}}</td>
 			        		<td>{{v}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -139,7 +139,7 @@
 			        		<td>{{trx['trx_date']}} <br/> (Block ID: {{trx['block_id']}})</td>
 			        		<td><a href="{{ url_for('get_node_request', node_id=trx['source_n_id'])}}">{{trx['source_n_id']}}</a> <br/> ({{trx['source']}}) </td>
 			        		<td>{{trx['destination_n_id']}} <br/> ({{trx['destination']}}) </td>
-			        		<td>{{trx['amount']|round(8)}}BTC <br/> ({{trx['amount_usd']|round(2)}}USD)</td>
+			        		<td>{{trx['amount']|format_btc}}BTC <br/> ({{trx['amount_usd']|format_usd}}USD)</td>
 			      		</tr>
 				    {% endfor %}
 				    </tbody>
@@ -182,8 +182,8 @@
 				    {% for k,v in informations['outcomes_grouped']['by_node'] %}
 			     		<tr>
 			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k}}</a></td>
-			        		<td>{{v['amount_usd']|round(2)}}</td>
-			        		<td>{{v['amount_btc']|round(8)}}</td>
+			        		<td>{{v['amount_usd']|format_usd}}</td>
+			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -205,8 +205,8 @@
 				    {% for k,v in informations['outcomes_grouped']['by_date'] %}
 			     		<tr>
 			        		<td>{{k}}</td>
-			        		<td>{{v['amount_usd']|round(2)}}</td>
-			        		<td>{{v['amount_btc']|round(8)}}</td>
+			        		<td>{{v['amount_usd']|format_usd}}</td>
+			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -225,7 +225,7 @@
 				    <tbody>
 				    {% for k,v in informations['outcomes_grouped']['by_amount']['amount_usd'] %}
 			     		<tr>
-			        		<td>{{k|round(2)}}</td>
+			        		<td>{{k|format_usd}}</td>
 			        		<td>{{v}}</td>
 			      		</tr>
 				    {% endfor %}
@@ -249,7 +249,7 @@
 			        		<td>{{trx['trx_date']}} <br/> (Block ID: {{trx['block_id']}})</td>
 			        		<td>{{trx['source_n_id']}}<br/> ({{trx['source']}}) </td>
 			        		<td><a href="{{ url_for('get_node_request', node_id=trx['destination_n_id'])}}">{{trx['destination_n_id']}}</a> <br/> ({{trx['destination']}}) </td>
-			        		<td>{{trx['amount']|round(8)}}BTC <br/> ({{trx['amount_usd']|round(2)}}USD)</td>
+			        		<td>{{trx['amount']|format_btc}}BTC <br/> ({{trx['amount_usd']|format_usd}}USD)</td>
 			      		</tr>
 				    {% endfor %}
 				    </tbody>

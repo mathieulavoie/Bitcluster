@@ -1,9 +1,11 @@
+import logging
 import bitcoin
 import bitcoin.rpc
 import bitcoin.core.script
 import socket
 import binascii
 import http.client
+import sys
 from crawler.address_utils import  Addressutils
 from bitcoin.core import CTransaction
 from settings import settings
@@ -26,6 +28,7 @@ class BaseCrawler:
                 print("Caught a connection error from Bitcoind RCP, Reconnecting...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
 
 
+
     def crawl_block(self,block_id):
             for i in range(1,settings.rcp_reconnect_max_retry+1):
                 try:
@@ -42,6 +45,14 @@ class BaseCrawler:
                     return True
                 except socket.error:
                     print("Caught an error from Bitcoind RCP, Reconnecting and retrying...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
+                    self.connect_to_bitcoind_rpc()
+                except KeyboardInterrupt:
+                    print("Caught interrupt signal,exiting")
+                    return False
+                except Exception as e:
+                    print("Caught an unhandled exception. See stacktrace:")
+                    logging.exception(e)
+                    print("Reconnecting and retrying...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
                     self.connect_to_bitcoind_rpc()
 
     def parse_transaction(self,transaction,block):
