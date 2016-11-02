@@ -2,10 +2,11 @@ import re
 import csv
 import io
 from web.dao import getNodeFromAddress, getNodeInformation, getTransations, groupByAllDistribution, groupbyNode, \
-    groupbyAmount, groupbyDate
+    groupbyAmount, groupbyDate, getNodesMappings
 from flask import *
 from datetime import datetime, timedelta
 import web.custom_filter
+import itertools
 
 app = Flask(__name__)
 
@@ -45,12 +46,15 @@ def get_node_request(node_id):
     truncated_by_node_out,infos['outcomes_grouped']['by_node'] = trim_collection(infos['outcomes_grouped']['by_node'],limit)
     truncated_by_amount_in,infos['incomes_grouped']['by_amount']['amount_usd'] = trim_collection(infos['incomes_grouped']['by_amount']['amount_usd'],limit)
     truncated_by_amount_out,infos['outcomes_grouped']['by_amount']['amount_usd'] = trim_collection(infos['outcomes_grouped']['by_amount']['amount_usd'],limit)
-
-
- 
     infos['transactions'] = {'in': trx_in, 'out':trx_out}
 
-    return render_template('node_details.html',informations=infos, truncated=(truncated_trx_in or truncated_trx_out or truncated_by_node_in or truncated_by_node_out or truncated_by_amount_in or truncated_by_amount_out))
+
+    displayed_nodes_id = infos['incomes_grouped']['by_node'].keys()
+    for trx in trx_in + trx_out:
+        displayed_nodes_id.append({trx['source_n_id'],trx['destination_n_id']})
+    mapping = getNodesMappings(set(displayed_nodes_id))
+
+    return render_template('node_details.html',informations=infos, mapping_collection=mapping, truncated=(truncated_trx_in or truncated_trx_out or truncated_by_node_in or truncated_by_node_out or truncated_by_amount_in or truncated_by_amount_out))
 
 
 def trim_collection(collection, limit):

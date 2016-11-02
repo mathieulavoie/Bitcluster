@@ -5,11 +5,10 @@ import bitcoin.core.script
 import socket
 import binascii
 import http.client
-import sys
 from crawler.address_utils import  Addressutils
 from bitcoin.core import CTransaction
 from settings import settings
-from bitcoin.core.script import OP_FALSE
+from pymongo import MongoClient
 
 
 class BaseCrawler:
@@ -18,6 +17,7 @@ class BaseCrawler:
         self.proxy = None
         self.connect_to_bitcoind_rpc()
         self.address_utils = Addressutils()
+        self.crawled_blocks_ids = []
 
     def connect_to_bitcoind_rpc(self):
         for i in range(1,settings.rcp_reconnect_max_retry+1):
@@ -42,6 +42,7 @@ class BaseCrawler:
                     block = self.proxy.getblock(block_hash)
                     for tx in block.vtx[1:]: #ignore mining tx
                         self.parse_transaction(tx,block)
+                    self.crawled_blocks_ids.append(block_id)
                     return True
                 except socket.error:
                     print("Caught an error from Bitcoind RCP, Reconnecting and retrying...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
@@ -80,3 +81,36 @@ class BaseCrawler:
 
     def do_work(self,inputs_addresses,outputs_scripts,block,trx_hash):
         raise NotImplementedError("Not implemented method do_work")
+
+    def mark_blocks(self, column_name):
+        if len(self.crawled_blocks_ids) == 0:
+            if settings.debug:
+                print("Warning: Attempting to mark zero block as crawled.")
+            return
+
+        client = MongoClient(settings.db_server, settings.db_port)
+        auto_update_collection = client.bitcoin.auto_update
+        min_block = min(self.crawled_blocks_ids)
+        if auto_update_collection.count() == 0 and min_block == 1: #Setup time!
+            print("It's seem to be the first use of the auto-update mechanism.")
+            while True:
+                choice = input("Would you like to mark all blocks previous to block id %d as crawled? (Y/N)[Y]"\
+                        .format(min_block)).lower().strip()
+                if choice == "y" or choice == "yes":
+                    mark_previous = True
+                    print("blocks from 1 to %d will be marked as crawled."%(min_block-1))
+                    break
+                elif choice == "n" or choice =="no":
+                    mark_previous = False
+                    print("No block will be marked as crawled.")
+                    break
+                else:
+                    print("Invalid choice.")
+            auto_update_collection.insert_many([{"_id":x,"cluster":mark_previous, "transactions":mark_previous} for x in range(1,min_block)])
+
+        for block_id in self.crawled_blocks_ids:
+            auto_update_collection.update_one({'_id':block_id},{column_name:True})
+
+        self.crawled_blocks_ids = []
+        client.close()
+

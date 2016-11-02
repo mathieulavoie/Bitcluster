@@ -2,7 +2,7 @@
 
 
 
-{% block title %}Node {{ informations['node_id'] }}{% endblock %}
+{% block title %}Node {{ informations['node_id'] |get_node_mapping(mapping_collection) }}{% endblock %}
 
 
 
@@ -18,7 +18,7 @@
         </div>
 
         <div class="col-md-4">
-        	<h2>Node Id: {{informations['node_id']}}</h2>
+        	<h2>Node{{informations['node_id']|get_node_mapping(mapping_collection)}}</h2>
         	<ul>
         		<li>Has <a href="#addresses">{{informations['stats']['node_addresses_count']}}</a> different addresses</li> 
         		<li>First seen: {{informations['stats']['first_seen']}}</li>
@@ -71,7 +71,7 @@
 				    <tbody>
 				    {% for k,v in informations['incomes_grouped']['by_node']  %}
 			     		<tr>
-			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k}}</a></td>
+			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k|get_node_mapping(mapping_collection)}}</a></td>
 			        		<td>{{v['amount_usd']|format_usd}}</td>
 			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
@@ -137,8 +137,8 @@
 				    {% for trx in informations['transactions']['in']%}
 			     		<tr>
 			        		<td>{{trx['trx_date']}} <br/> (Block ID: {{trx['block_id']}})</td>
-			        		<td><a href="{{ url_for('get_node_request', node_id=trx['source_n_id'])}}">{{trx['source_n_id']}}</a> <br/> ({{trx['source']}}) </td>
-			        		<td>{{trx['destination_n_id']}} <br/> ({{trx['destination']}}) </td>
+			        		<td><a href="{{ url_for('get_node_request', node_id=trx['source_n_id'])}}">{{trx['source_n_id']|get_node_mapping(mapping_collection)}}</a> <br/> ({{trx['source']}}) </td>
+			        		<td>{{trx['destination_n_id']|get_node_mapping(mapping_collection)}} <br/> ({{trx['destination']}}) </td>
 			        		<td>{{trx['amount']|format_btc}}BTC <br/> ({{trx['amount_usd']|format_usd}}USD)</td>
 			      		</tr>
 				    {% endfor %}
@@ -181,7 +181,7 @@
 				    <tbody>
 				    {% for k,v in informations['outcomes_grouped']['by_node'] %}
 			     		<tr>
-			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k}}</a></td>
+			        		<td><a href="{{ url_for('get_node_request', node_id=k)}}">{{k|get_node_mapping(mapping_collection)}}</a></td>
 			        		<td>{{v['amount_usd']|format_usd}}</td>
 			        		<td>{{v['amount_btc']|format_btc}}</td>
 			        		<td>{{v['transactions']|length}}</td>
@@ -247,8 +247,8 @@
 				    {% for trx in informations['transactions']['out']%}
 			     		<tr>
 			        		<td>{{trx['trx_date']}} <br/> (Block ID: {{trx['block_id']}})</td>
-			        		<td>{{trx['source_n_id']}}<br/> ({{trx['source']}}) </td>
-			        		<td><a href="{{ url_for('get_node_request', node_id=trx['destination_n_id'])}}">{{trx['destination_n_id']}}</a> <br/> ({{trx['destination']}}) </td>
+			        		<td>{{trx['source_n_id']|get_node_mapping(mapping_collection)}}<br/> ({{trx['source']}}) </td>
+			        		<td><a href="{{ url_for('get_node_request', node_id=trx['destination_n_id'])}}">{{trx['destination_n_id']|get_node_mapping(mapping_collection)}}</a> <br/> ({{trx['destination']}}) </td>
 			        		<td>{{trx['amount']|format_btc}}BTC <br/> ({{trx['amount_usd']|format_usd}}USD)</td>
 			      		</tr>
 				    {% endfor %}
@@ -276,7 +276,7 @@
 				    {% for addr in informations['node_addresses']|sort %}
 			     		<li>{{addr}}</li>
 				    {% endfor %}
-			<ul>
+			</ul>
      	</div>
     </div>
 

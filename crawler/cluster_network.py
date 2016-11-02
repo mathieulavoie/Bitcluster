@@ -5,7 +5,7 @@ from pymongo import MongoClient, DESCENDING
 
 
 class ClusterNetwork:
-    def __init__(self, db_server, db_port,):
+    def __init__(self, db_server, db_port):
         self.db_server = db_server
         self.db_port = db_port
         self.addr_utils = address_utils.Addressutils()

@@ -16,6 +16,7 @@ def start(start_block_id, end_block_id = None):
         process = None
         while builder.crawl_block(block_id):
             if end_block_id is not None and block_id > end_block_id: #Outside of specified block range
+                print("Specified block range (%s to %s) crawled."%(start_block_id,end_block_id))
                 break
 
             if settings.debug or block_id % 100 == 0:
@@ -49,6 +50,8 @@ def start(start_block_id, end_block_id = None):
         process = Process(target=builder.network_graph.synchronize_mongo_db)
         process.start()
         process.join()
+        print("Marking blocks")
+        builder.mark_blocks("cluster")
         #DONE!
 
 

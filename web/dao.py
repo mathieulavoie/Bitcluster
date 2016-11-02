@@ -141,3 +141,16 @@ def getNodeInformation(node_id):
     information['transactions'] = {'in': transactions_in, 'out':transactions_out}
 
     return information
+
+
+def getNodesMappings(nodes_ids = None):
+    mapping = dict()
+    condition = {}
+
+    if nodes_ids is not None:
+        condition = {"n_id":{"$in":[x for x in nodes_ids]}}
+
+    for m in db.mappings.find(condition):
+        mapping[m['n_id']] = m['name']
+
+    return mapping
