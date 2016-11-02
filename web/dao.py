@@ -143,14 +143,14 @@ def getNodeInformation(node_id):
     return information
 
 
-def getNodesMappings(nodes_ids = None):
-    mapping = dict()
+def getNodesTags(nodes_ids = None):
+    tags = dict()
     condition = {}
 
     if nodes_ids is not None:
         condition = {"n_id":{"$in":[x for x in nodes_ids]}}
 
-    for m in db.mappings.find(condition):
-        mapping[m['n_id']] = m['name']
+    for m in db.tags.find(condition):
+        tags[m['n_id']] = m['description']
 
-    return mapping
+    return tags

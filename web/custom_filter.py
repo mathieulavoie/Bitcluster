@@ -1,17 +1,15 @@
-from jinja2 import Environment
+from web.web import app
 
+@app.template_filter('format_usd')
 def format_usd(value):
     return "{:,.2f}".format(value)
 
+@app.template_filter('format_btc')
 def format_btc(value):
     return "{:,.8f}".format(value)
 
-def get_node_mapping(node_id,mapping_collection):
-    if node_id in mapping_collection:
-        return mapping_collection[node_id]
-    return node_id
-
-env = Environment()
-env.filters['format_usd'] = format_usd
-env.filters['format_btc'] = format_btc
-env.filters['get_node_mapping'] = get_node_mapping
+@app.template_filter('get_node_tag')
+def get_node_tag(node_id,tags_collection,include_prefix = False):
+    if node_id in tags_collection:
+        return tags_collection[node_id]
+    return "Node Id %d" % node_id if include_prefix else node_id
