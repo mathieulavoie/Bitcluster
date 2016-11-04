@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}Choose one!{% endblock %}
+
+{% block content %}
+<div class="container">
+ <h1>What did you mean?</h1>
+    <ul>
+        {% for k,v in possibles_matches %}
+                <li><a href="{{ url_for('get_node_request',node_id=k)}}">{{v}}</a></li>
+        {% endfor %}
+    </ul>
+
+</div>
+{% endblock %}
