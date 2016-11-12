@@ -15,19 +15,30 @@ import web.custom_filter
 @app.route('/',methods=['POST', 'GET'])
 def web_root():
     if request.method == 'POST':
-        
-
-        address = request.form['q']
-        if address.isnumeric():
-            return redirect(url_for('get_node_request',node_id=address))
+        user_input = request.form['q']
+        if user_input.isnumeric():
+            return redirect(url_for('get_node_request',node_id=user_input))
         else:
             pattern = re.compile("^([1-9ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz])+$")
-            if pattern.match(address):
-                node_id = getNodeFromAddress(address)
+            if pattern.match(user_input): # Match Address Format
+                node_id = getNodeFromAddress(user_input)
                 if node_id is not None:
                     return redirect(url_for('get_node_request',node_id=node_id))
-                
-            return render_template('index.html',message="Invalid or inexistant address")
+
+            pattern = re.compile("^([A-Za-z0-9\-\.])+$")
+            if pattern.match(user_input): #Check in description.
+                possible_matches = []
+                for i in getNodesTags():
+                    if user_input.lower() in i[1].lower():
+                        possible_matches.append(i)
+
+                if len(possible_matches) == 1: #Only One result
+                    return redirect(url_for('get_node_request', node_id=possible_matches[0][0]))
+                elif len(possible_matches) > 1:
+                    return render_template('results.html', possible_matches=possible_matches)
+
+
+            return render_template('index.html',message="Invalid or inexistant address/description")
 
             
         
