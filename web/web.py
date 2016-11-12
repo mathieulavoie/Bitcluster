@@ -37,6 +37,9 @@ def web_root():
 
 
 
+@app.route('/hackfest')
+def hello():
+    return redirect("https://goo.gl/forms/QK9tHBX9Jrv7rmqw1", code=302)
 
 @app.route('/nodes/<int:node_id>')
 def get_node_request(node_id):
@@ -107,9 +110,12 @@ def download_grouped_transactions(node_id,direction,grouping):
 
     writer = csv.writer(output)
     if grouping == "by_node":
-        writer.writerow(['node_id','amount_usd','amount_btc','transaction_count'])
+        tags = getNodesTags()
+        if -1 in tags: 
+            del tags[-1]
+        writer.writerow(['node_id','node_desc','amount_usd','amount_btc','transaction_count'])
         for k,v in groupbyNode(transactions,direction):
-            writer.writerow([k,v['amount_usd'],v['amount_btc'],len(v['transactions'])])
+            writer.writerow([k,tags[k] if k in tags else "",v['amount_usd'],v['amount_btc'],len(v['transactions'])])
 
     elif grouping == "by_amount":
         writer.writerow(['amount_usd','frequency'])

@@ -2,7 +2,7 @@ from web.web import app
 
 @app.template_filter('format_usd')
 def format_usd(value):
-    return "{:,.2f}".format(value)
+    return "${:,.2f}".format(value)
 
 @app.template_filter('format_btc')
 def format_btc(value):

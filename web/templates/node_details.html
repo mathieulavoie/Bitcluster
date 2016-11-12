@@ -23,6 +23,9 @@
         		<li>Has <a href="#addresses">{{informations['stats']['node_addresses_count']}}</a> different addresses</li> 
         		<li>First seen: {{informations['stats']['first_seen']}}</li>
         		<li>Last seen: {{informations['stats']['last_seen']}}</li>
+				{% set btc_left = informations['stats']['amounts_received']['btc'] - informations['stats']['amounts_sent']['btc']%}
+				{% set usd_left = btc_left * 702.07 %}
+				<li>Money left: {% if btc_left >= 0 %} {{btc_left|format_btc}} BTC / {{usd_left| format_usd}} USD {% else %} Unknown {% endif %}</li>
         	</ul>
         </div>
 
