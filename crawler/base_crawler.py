@@ -90,26 +90,9 @@ class BaseCrawler:
 
         client = MongoClient(settings.db_server, settings.db_port)
         auto_update_collection = client.bitcoin.auto_update
-        min_block = min(self.crawled_blocks_ids)
-        if auto_update_collection.count() == 0 and min_block == 1: #Setup time!
-            print("It's seem to be the first use of the auto-update mechanism.")
-            while True:
-                choice = input("Would you like to mark all blocks previous to block id %d as crawled? (Y/N)[Y]"\
-                        .format(min_block)).lower().strip()
-                if choice == "y" or choice == "yes":
-                    mark_previous = True
-                    print("blocks from 1 to %d will be marked as crawled."%(min_block-1))
-                    break
-                elif choice == "n" or choice =="no":
-                    mark_previous = False
-                    print("No block will be marked as crawled.")
-                    break
-                else:
-                    print("Invalid choice.")
-            auto_update_collection.insert_many([{"_id":x,"cluster":mark_previous, "transactions":mark_previous} for x in range(1,min_block)])
 
         for block_id in self.crawled_blocks_ids:
-            auto_update_collection.update_one({'_id':block_id},{column_name:True})
+            auto_update_collection.update({'_id':block_id},{column_name:True},upsert=True)
 
         self.crawled_blocks_ids = []
         client.close()

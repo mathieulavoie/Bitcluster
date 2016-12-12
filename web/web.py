@@ -28,14 +28,14 @@ def web_root():
             pattern = re.compile("^([A-Za-z0-9\-\.])+$")
             if pattern.match(user_input): #Check in description.
                 possible_matches = []
-                for i in getNodesTags():
+                for i in getNodesTags().items():
                     if user_input.lower() in i[1].lower():
                         possible_matches.append(i)
 
                 if len(possible_matches) == 1: #Only One result
                     return redirect(url_for('get_node_request', node_id=possible_matches[0][0]))
                 elif len(possible_matches) > 1:
-                    return render_template('results.html', possible_matches=possible_matches)
+                    return render_template('results.html', suggestions=possible_matches)
 
 
             return render_template('index.html',message="Invalid or inexistant address/description")
