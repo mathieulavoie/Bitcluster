@@ -9,12 +9,16 @@ from multiprocessing.context import  Process
 
 
 
-def start():
+def start(start_block_id, end_block_id = None):
         builder = cluster_crawler.ClusterCrawler()
-        start_block_id  = int(sys.argv[1])
+
         block_id = start_block_id
         process = None
         while builder.crawl_block(block_id):
+            if end_block_id is not None and block_id > end_block_id: #Outside of specified block range
+                print("Specified block range (%s to %s) crawled."%(start_block_id,end_block_id))
+                break
+
             if settings.debug or block_id % 100 == 0:
                 print("Block %d crawled" % block_id)
 
@@ -46,11 +50,15 @@ def start():
         process = Process(target=builder.network_graph.synchronize_mongo_db)
         process.start()
         process.join()
+        print("Marking blocks")
+        builder.mark_blocks("cluster")
         #DONE!
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2 :
-        start()
+    if len(sys.argv) == 2 or len(sys.argv) == 3 :
+        start_block_id  = int(sys.argv[1])
+        end_block_id = int(sys.argv[2]) if len(sys.argv) == 3 else None
+        start(start_block_id,end_block_id)
     else:
-        print("Usage: python %s <starting block id>" % sys.argv[0])
+        print("Usage: python %s <starting block id> [ending_block_id]" % sys.argv[0])

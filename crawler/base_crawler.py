@@ -1,3 +1,4 @@
+import logging
 import bitcoin
 import bitcoin.rpc
 import bitcoin.core.script
@@ -7,7 +8,7 @@ import http.client
 from crawler.address_utils import  Addressutils
 from bitcoin.core import CTransaction
 from settings import settings
-from bitcoin.core.script import OP_FALSE
+from pymongo import MongoClient
 
 
 class BaseCrawler:
@@ -16,6 +17,7 @@ class BaseCrawler:
         self.proxy = None
         self.connect_to_bitcoind_rpc()
         self.address_utils = Addressutils()
+        self.crawled_blocks_ids = []
 
     def connect_to_bitcoind_rpc(self):
         for i in range(1,settings.rcp_reconnect_max_retry+1):
@@ -24,6 +26,7 @@ class BaseCrawler:
                 return
             except http.client.HTTPException:
                 print("Caught a connection error from Bitcoind RCP, Reconnecting...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
+
 
 
     def crawl_block(self,block_id):
@@ -39,9 +42,18 @@ class BaseCrawler:
                     block = self.proxy.getblock(block_hash)
                     for tx in block.vtx[1:]: #ignore mining tx
                         self.parse_transaction(tx,block)
+                    self.crawled_blocks_ids.append(block_id)
                     return True
                 except socket.error:
                     print("Caught an error from Bitcoind RCP, Reconnecting and retrying...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
+                    self.connect_to_bitcoind_rpc()
+                except KeyboardInterrupt:
+                    print("Caught interrupt signal,exiting")
+                    return False
+                except Exception as e:
+                    print("Caught an unhandled exception. See stacktrace:")
+                    logging.exception(e)
+                    print("Reconnecting and retrying...(%d/%d)" %(i,settings.rcp_reconnect_max_retry))
                     self.connect_to_bitcoind_rpc()
 
     def parse_transaction(self,transaction,block):
@@ -69,3 +81,19 @@ class BaseCrawler:
 
     def do_work(self,inputs_addresses,outputs_scripts,block,trx_hash):
         raise NotImplementedError("Not implemented method do_work")
+
+    def mark_blocks(self, column_name):
+        if len(self.crawled_blocks_ids) == 0:
+            if settings.debug:
+                print("Warning: Attempting to mark zero block as crawled.")
+            return
+
+        client = MongoClient(settings.db_server, settings.db_port)
+        auto_update_collection = client.bitcoin.auto_update
+
+        for block_id in self.crawled_blocks_ids:
+            auto_update_collection.update({'_id':block_id},{column_name:True},upsert=True)
+
+        self.crawled_blocks_ids = []
+        client.close()
+

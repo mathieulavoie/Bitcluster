@@ -12,7 +12,7 @@
 
  <form role="form" action="/" method="post">
   <div class="form-group {% if message is defined%} has-error {% endif %}">
-    <label for="address">Bitcoin address or node id:</label>
+    <label for="address">Bitcoin address, node id or service name:</label>
     <input type="text" class="form-control" id="address" name="q">
     {% if message is defined%}
     <span class="help-block">{{message}}</span>

@@ -70,6 +70,9 @@ class MoneyCrawler(base_crawler.BaseCrawler):
             return
 
 
+
+
+
     def insert_into_db(self):
         if len(self.money_movements) == 0:
             if settings.debug:
@@ -80,6 +83,9 @@ class MoneyCrawler(base_crawler.BaseCrawler):
         collection = db.transactions
         collection.insert_many(self.money_movements, ordered=False)
         print("DB Sync Finished")
+        self.mark_blocks("transactions")
+        print("Block Marked")
+
 
     def ensure_indexes(self):
         #Ensure index existence

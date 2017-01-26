@@ -141,3 +141,17 @@ def getNodeInformation(node_id):
     information['transactions'] = {'in': transactions_in, 'out':transactions_out}
 
     return information
+
+
+def getNodesTags(nodes_ids = None):
+    tags = dict()
+    condition = {}
+
+    condition = {"n_id":{"$ne":-1}}
+    if nodes_ids is not None:
+        condition = {"$and":[{"n_id":{"$ne":-1}},{"n_id":{"$in":[x for x in nodes_ids]}}]}
+
+    for m in db.tags.find(condition):
+        tags[m['n_id']] = m['description']
+
+    return tags
