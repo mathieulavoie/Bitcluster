@@ -1,6 +1,7 @@
 import hashlib
 import bitcoin.base58
 from bitcoin.core.script import OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, OP_EQUAL
+from .py3specials import *
 
 
 OP_FALSE = ord('0')
@@ -51,22 +52,78 @@ class Addressutils:
 
     '''
     Taken From pybitcointools
-    Converted to Python3
+    Updated to fix invalid public key issues
     '''
-    def decompress(self,pubkey):
-        format = self.get_pubkey_format(pubkey)
-        assert(format == 'bin_compressed')
-        type = pubkey[0]
-        x = int.from_bytes(pubkey[1:33],byteorder='big')
-        beta = pow(x*x*x+A*x+B, (P+1)//4, P)
-        y = (P-beta) if ((beta + type) % 2) else beta
-        coords = (x, y)
-        bin_coords = (bytearray.fromhex((hex(coords[0])[2:]).zfill(64)), bytearray.fromhex((hex(coords[1])[2:]).zfill(64)))
-        return b'\x04' + bin_coords[0] + bin_coords[1]
+    def decompress(self, pubkey):
+        f = self.get_pubkey_format(pubkey)
+        if 'compressed' not in f:
+            return pubkey
+        elif f == 'bin_compressed':
+            return self.encode_pubkey(self.decode_pubkey(pubkey, f), 'bin')
+        elif f == 'hex_compressed' or f == 'decimal':
+            return self.encode_pubkey(self.decode_pubkey(pubkey, f), 'hex')
 
 
 
     def get_pubkey_format(self,pub):
-        if len(pub) == 65 and pub[0] == 0x04: return 'bin'
-        elif len(pub) == 33 and pub[0] in [0x02, 0x03]: return 'bin_compressed'
-        else: raise Exception("Pubkey not in recognized format")
+        two = 2
+        three = 3
+        four = 4
+        if isinstance(pub, (tuple, list)):
+            return 'decimal'
+        elif len(pub) == 65 and pub[0] == four:
+            return 'bin'
+        elif len(pub) == 130 and pub[0:2] == '04':
+            return 'hex'
+        elif len(pub) == 33 and pub[0] in [two, three]:
+            return 'bin_compressed'
+        elif len(pub) == 66 and pub[0:2] in ['02', '03']:
+            return 'hex_compressed'
+        elif len(pub) == 64:
+            return 'bin_electrum'
+        elif len(pub) == 128:
+            return 'hex_electrum'
+        else:
+            raise Exception("Pubkey not in recognized format")
+
+    def encode_pubkey(self, pub, formt):
+        if not isinstance(pub, (tuple, list)):
+            pub = self.decode_pubkey(pub)
+        if formt == 'decimal':
+            return pub
+        elif formt == 'bin':
+            return b'\x04' + encode(pub[0], 256, 32) + encode(pub[1], 256, 32)
+        elif formt == 'bin_compressed':
+            return from_int_to_byte(2 + (pub[1] % 2)) + encode(pub[0], 256, 32)
+        elif formt == 'hex':
+            return '04' + encode(pub[0], 16, 64) + encode(pub[1], 16, 64)
+        elif formt == 'hex_compressed':
+            return '0' + str(2 + (pub[1] % 2)) + encode(pub[0], 16, 64)
+        elif formt == 'bin_electrum':
+            return encode(pub[0], 256, 32) + encode(pub[1], 256, 32)
+        elif formt == 'hex_electrum':
+            return encode(pub[0], 16, 64) + encode(pub[1], 16, 64)
+        else:
+            raise Exception("Invalid format!")
+
+    def decode_pubkey(self, pub, formt=None):
+        if not formt: formt = self.get_pubkey_format(pub)
+        if formt == 'decimal':
+            return pub
+        elif formt == 'bin':
+            return (decode(pub[1:33], 256), decode(pub[33:65], 256))
+        elif formt == 'bin_compressed':
+            x = decode(pub[1:33], 256)
+            beta = pow(int(x * x * x + A * x + B), int((P + 1) // 4), int(P))
+            y = (P - beta) if ((beta + from_byte_to_int(pub[0])) % 2) else beta
+            return (x, y)
+        elif formt == 'hex':
+            return (decode(pub[2:66], 16), decode(pub[66:130], 16))
+        elif formt == 'hex_compressed':
+            return self.decode_pubkey(safe_from_hex(pub), 'bin_compressed')
+        elif formt == 'bin_electrum':
+            return (decode(pub[:32], 256), decode(pub[32:64], 256))
+        elif formt == 'hex_electrum':
+            return (decode(pub[:64], 16), decode(pub[64:128], 16))
+        else:
+            raise Exception("Invalid format!")
