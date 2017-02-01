@@ -62,16 +62,8 @@ class BaseCrawler:
             trx_hash = binascii.hexlify(transaction.GetHash()[::-1]).decode('utf-8')
             for vin in transaction.vin:
                 try:
-                    sign_script = vin.scriptSig
-                    push_data_sig = sign_script[0]
-                    sign_script = sign_script[1:]
-                    sign_script = sign_script[push_data_sig:]
-
-                    if len(sign_script) > 0:
-                        input_addresses.add(self.address_utils.convert_hash160_to_addr(self.address_utils.convert_public_key_to_hash160(sign_script)))
-                    else:
-                        prevtxout = self.proxy.getrawtransaction(vin.prevout.hash).vout[vin.prevout.n]
-                        input_addresses.add(self.address_utils.get_hash160_from_cscript(prevtxout.scriptPubKey))
+                    prevtxout = self.proxy.getrawtransaction(vin.prevout.hash).vout[vin.prevout.n]
+                    input_addresses.add(self.address_utils.get_hash160_from_cscript(prevtxout.scriptPubKey))
                 except Exception as ex:
                     if settings.debug:
                         print("Transaction %s Unable To Parse SigScript %s"%(trx_hash,binascii.hexlify(vin.scriptSig)))
