@@ -1,0 +1,6 @@
+# Requirements for the repository Bitcluster
+
+flask
+pyMongo
+python-bitcoinlib
+
